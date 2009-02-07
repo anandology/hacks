@@ -10,7 +10,7 @@ lightty - Script to run the given program as fastcgi using Lighttpd.
     http://0.0.0.0:8080
     ....
     $ lightty code.py 9000
-    http://0.0.0.0:8080
+    http://0.0.0.0:9000
     ....
 
 pyvi - Script to open source file of a python module in vim.
