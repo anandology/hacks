@@ -1,0 +1,69 @@
+#! /usr/bin/env python
+# 
+# Script to run a given script as fastcgi using Lighttpd.
+#
+# vim:syntax=python
+
+import sys
+import os
+import string
+
+CONF = """
+server.modules = ("mod_fastcgi", "mod_rewrite", "mod_accesslog", "mod_redirect")
+
+server.document-root = "$root"
+
+fastcgi.server = ( "/$script" =>
+    (( 
+        "socket" => ".fastcgi.$script.socket",
+        "bin-path" => "$root/$script",
+        "max-procs" => 1,
+        "bin-environment" => (
+            "REAL_SCRIPT_NAME" => ""
+        ),
+        "check-local" => "disable"
+    ))
+)
+
+url.rewrite-once = (
+    "^/favicon.ico$$" => "/static/favicon.ico",
+    "^/static/(.*)$$" => "/static/$$1",
+    "^/(.*)$$" => "/$script/$$1"
+)
+
+server.errorlog = "/dev/tty"
+accesslog.filename = "/dev/tty"
+
+server.port = $port
+"""
+
+def make_config(root, script, port):
+    return string.Template(CONF).substitute(locals())
+
+def intget(x, index, default=None):
+    try:
+        return x[index]
+    except IndexError:
+        return default
+
+def setup_path():
+    paths = ["/usr/sbin", "/usr/local/sbin"]
+    path = os.getenv('PATH') + ":" + ":".join(paths)
+    os.putenv("PATH", path)
+
+def main():
+    script = sys.argv[1]
+    root = os.path.abspath(os.path.dirname(script))
+    script = os.path.basename(script)
+    port = intget(sys.argv, 2, 8080)
+    
+    f = open('.lightty.conf', 'w')
+    f.write(make_config(root, script, port))
+    f.close()
+
+    setup_path()
+    os.system("lighttpd -D -f .lightty.conf")
+    os.unlink(".lightty.conf")
+
+if __name__ == "__main__":
+    main()
