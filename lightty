@@ -1,8 +1,16 @@
 #! /usr/bin/env python
-# 
-# Script to run a given script as fastcgi using Lighttpd.
-#
-# vim:syntax=python
+"""Script to run the given program as fastcgi using Lighttpd.
+
+Usage:
+    
+    $ lightty code.py
+    http://0.0.0.0:8080
+    ...
+
+    $ lightty code.py 9000
+    http://0.0.0.0:9000
+    ...
+"""
 
 import sys
 import os
@@ -60,6 +68,9 @@ def main():
     f = open('.lightty.conf', 'w')
     f.write(make_config(root, script, port))
     f.close()
+
+    print "http://0.0.0.0:%s/" % port
+    print
 
     setup_path()
     os.system("lighttpd -D -f .lightty.conf")

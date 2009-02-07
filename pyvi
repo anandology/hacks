@@ -1,4 +1,12 @@
 #! /usr/bin/env python
+"""Script to open source file of a python module in vim.
+
+In the middle of serious python hacking, you might like to see how a class or function is implemented.
+This utility helps you by opening the module of interest in vim. 
+
+Usage:
+    $ pyvi os.path
+"""
 
 import sys
 import os
@@ -12,5 +20,5 @@ if file.endswith('.pyc'):
     file = file[:-1]
 
 os.chdir(os.path.dirname(file))
-os.system('vim ' + file)
+os.system('vim -R ' + file)
 
