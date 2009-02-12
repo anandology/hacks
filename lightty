@@ -39,6 +39,30 @@ url.rewrite-once = (
     "^/(.*)$$" => "/$script/$$1"
 )
 
+mimetype.assign = (
+    ".text"         =>      "text/plain",
+    ".txt"          =>      "text/plain",
+    ".css"          =>      "text/css",
+    ".js"           =>      "text/javascript",
+
+    ".conf"         =>      "text/plain",
+    ".c"            =>      "text/plain",
+    ".py"           =>      "text/plain",
+
+    ".html"         =>      "text/html",
+    ".htm"          =>      "text/html",
+    ".xml"          =>      "text/xml",
+
+    ".gif"          =>      "image/gif",
+    ".jpg"          =>      "image/jpeg",
+    ".jpeg"         =>      "image/jpeg",
+    ".png"          =>      "image/png",
+
+    ".zip"          =>      "application/zip",
+    ".gz"           =>      "application/x-gzip"    
+)
+
+
 server.errorlog = "/dev/tty"
 accesslog.filename = "/dev/tty"
 
@@ -64,8 +88,10 @@ def main():
     root = os.path.abspath(os.path.dirname(script))
     script = os.path.basename(script)
     port = intget(sys.argv, 2, 8080)
+
+    conf_file = ".lightty_%s.conf" % os.getpid()
     
-    f = open('.lightty.conf', 'w')
+    f = open(conf_file, 'w')
     f.write(make_config(root, script, port))
     f.close()
 
@@ -73,8 +99,8 @@ def main():
     print
 
     setup_path()
-    os.system("lighttpd -D -f .lightty.conf")
-    os.unlink(".lightty.conf")
+    os.system("lighttpd -D -f " + conf_file)
+    os.unlink(conf_file)
 
 if __name__ == "__main__":
     main()
