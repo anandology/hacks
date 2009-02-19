@@ -1,0 +1,27 @@
+#! /usr/bin/env python
+"""
+rejson: json pretty-printer.
+"""
+import sys
+import simplejson
+import re
+
+def split_callback(data):
+    m = re.match('^([a-zA-Z0-9_]+)\((.*)\);?$', data)
+    if m:
+        return m.group(1), m.group(2)
+    else:
+        return None, data
+
+def main():
+    data = sys.stdin.read().strip()
+    callback, data = split_callback(data)
+    data = simplejson.dumps(simplejson.loads(data), indent=4);
+
+    if callback:
+        print callback + "(" + data + ");"
+    else:
+        print data
+        
+if __name__ == '__main__':
+    main()
