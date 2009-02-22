@@ -1,43 +1,41 @@
 #! /usr/bin/env python
-"""Script to run the given program as fastcgi using Lighttpd.
+"""Starts lighttpd with a give document root.
+Optional script argument can be specified to run it as fastcgi.
 
-Usage:
-    
+Examples:
+
+Start Lighttpd with current working dir as document-root.
+
     $ lightty code.py
     http://0.0.0.0:8080
     ...
 
-    $ lightty code.py 9000
+Start Lighttpd with run.py as fastcgi.
+
+    $ lightty code.py -p 9000 -s run.py
     http://0.0.0.0:9000
     ...
 """
 
+__author__ = "Anand Chitipothu <anandology@gmail.com>"
+
 import sys
 import os
 import string
+from optparse import OptionParser
 
 CONF = """
 server.modules = ("mod_fastcgi", "mod_rewrite", "mod_accesslog", "mod_redirect")
 
 server.document-root = "$root"
 
-fastcgi.server = ( "/$script" =>
-    (( 
-        "socket" => ".fastcgi.$script.socket",
-        "bin-path" => "$root/$script",
-        "max-procs" => 1,
-        "bin-environment" => (
-            "REAL_SCRIPT_NAME" => ""
-        ),
-        "check-local" => "disable"
-    ))
+index-file.names = ( 
+    "index.php", 
+    "index.html", 
+    "index.htm"
 )
 
-url.rewrite-once = (
-    "^/favicon.ico$$" => "/static/favicon.ico",
-    "^/static/(.*)$$" => "/static/$$1",
-    "^/(.*)$$" => "/$script/$$1"
-)
+$fastcgi
 
 mimetype.assign = (
     ".text"         =>      "text/plain",
@@ -62,21 +60,38 @@ mimetype.assign = (
     ".gz"           =>      "application/x-gzip"    
 )
 
-
 server.errorlog = "/dev/tty"
 accesslog.filename = "/dev/tty"
 
 server.port = $port
 """
 
-def make_config(root, script, port):
-    return string.Template(CONF).substitute(locals())
+FASTCGI_TEMPLATE = """
+fastcgi.server = ( "/$script" =>
+    (( 
+        "socket" => ".fastcgi.$script.socket",
+        "bin-path" => "$root/$script",
+        "max-procs" => 1,
+        "bin-environment" => (
+            "REAL_SCRIPT_NAME" => ""
+        ),
+        "check-local" => "disable"
+    ))
+)
 
-def intget(x, index, default=None):
-    try:
-        return x[index]
-    except IndexError:
-        return default
+url.rewrite-once = (
+    "^/favicon.ico$$" => "/static/favicon.ico",
+    "^/static/(.*)$$" => "/static/$$1",
+    "^/(.*)$$" => "/$script/$$1"
+)
+"""
+
+def make_config(root, script, port):
+    if script:
+        fastcgi = string.Template(FASTCGI_TEMPLATE).substitute(locals())
+    else:
+        fastcgi = ""
+    return string.Template(CONF).substitute(locals())
 
 def setup_path():
     paths = ["/usr/sbin", "/usr/local/sbin"]
@@ -84,23 +99,41 @@ def setup_path():
     os.putenv("PATH", path)
 
 def main():
-    script = sys.argv[1]
-    root = os.path.abspath(os.path.dirname(script))
-    script = os.path.basename(script)
-    port = intget(sys.argv, 2, 8080)
+    options = parse_args()
+    config = make_config(options.root, options.script, options.port)
+
+    if options.debug:
+        print config
+        sys.exit(0)
 
     conf_file = ".lightty_%s.conf" % os.getpid()
     
     f = open(conf_file, 'w')
-    f.write(make_config(root, script, port))
+    f.write(config)
     f.close()
 
-    print "http://0.0.0.0:%s/" % port
+    print "http://0.0.0.0:%s/" % options.port
     print
 
     setup_path()
     os.system("lighttpd -D -f " + conf_file)
     os.unlink(conf_file)
+
+def parse_args():
+    parser = OptionParser("lightty [-p PORT]  [-s SCRIPT] [-d] [document_root]")
+
+    pwd = os.getcwd()
+    parser.add_option("-p", "--port", dest="port", default=8080, type="int", help="server port (default: %default)")
+    parser.add_option("-s", "--script", dest="script", default=None, help="fastcgi script")
+    parser.add_option("-d", "--debug", action="store_true", dest="debug", default=False, help="print config and exit")
+
+    (options, args) = parser.parse_args()
+
+    if args:
+        options.root = args[0]
+    else:
+        options.root = os.getcwd()
+    return options
 
 if __name__ == "__main__":
     main()
