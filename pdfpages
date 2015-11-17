@@ -1,0 +1,40 @@
+#! /usr/bin/env python
+"""Script to splits PDF with multiple pages into multiple single page PDFs.
+"""
+from __future__ import print_function
+
+import sys
+import os
+import pyPdf
+import argparse
+
+def parse_arguments():
+    """Parses the arguments and returns arguments object.
+    """
+    parser = argparse.ArgumentParser("pdfpages pdffile")
+    parser.add_argument("filename", help="filename to split into pages")
+    parser.add_argument("-d", "--output-directory", help="directory to save the individual pages", default="")
+    return parser.parse_args()
+
+def write_pdf(filename, page):
+    print("writing ", filename, file=sys.stderr)
+    writer = pyPdf.PdfFileWriter()
+    writer.addPage(page)
+    with open(filename, "w") as f:
+        writer.write(f)
+
+def main():
+    args = parse_arguments()
+    fileobj = open(args.filename)
+    pdf = pyPdf.PdfFileReader(fileobj)
+
+    width = len(str(pdf.numPages))
+
+    for i in range(pdf.numPages):
+        filename = args.filename.replace(".pdf", "-{i:0{w}d}.pdf".format(i=i+1, w=width))
+        if args.output_directory:
+            filename = os.path.join(args.output_directory, os.path.basename(filename))
+        write_pdf(filename, pdf.getPage(i))
+
+if __name__ == "__main__":
+    main()
