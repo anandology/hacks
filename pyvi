@@ -11,14 +11,13 @@ Usage:
 import sys
 import os
 
-mod = __import__(sys.argv[1], {}, {}, ['x'])
-file = mod.__file__
+MODULE = __import__(sys.argv[1], {}, {}, ['x'])
+MODULE_SOURCE = MODULE.__file__
 
-print file
+print MODULE_SOURCE
 
-if file.endswith('.pyc'):
-    file = file[:-1]
+if MODULE_SOURCE.endswith('.pyc'):
+    MODULE_SOURCE = MODULE_SOURCE[:-1]
 
-os.chdir(os.path.dirname(file))
-os.system('vim -R ' + file)
-
+os.chdir(os.path.dirname(MODULE_SOURCE))
+os.system('vim -R ' + MODULE_SOURCE)
