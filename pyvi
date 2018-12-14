@@ -20,4 +20,4 @@ if MODULE_SOURCE.endswith('.pyc'):
     MODULE_SOURCE = MODULE_SOURCE[:-1]
 
 os.chdir(os.path.dirname(MODULE_SOURCE))
-os.system('view -M ' + MODULE_SOURCE)
+os.execlp('view', 'view', '-M', MODULE_SOURCE)
