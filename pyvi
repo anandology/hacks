@@ -8,13 +8,15 @@ Usage:
     $ pyvi os.path
 """
 
+from __future__ import print_function
+
 import sys
 import os
 
 MODULE = __import__(sys.argv[1], {}, {}, ['x'])
 MODULE_SOURCE = MODULE.__file__
 
-print MODULE_SOURCE
+print(MODULE_SOURCE)
 
 if MODULE_SOURCE.endswith('.pyc'):
     MODULE_SOURCE = MODULE_SOURCE[:-1]
