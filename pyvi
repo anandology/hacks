@@ -15,13 +15,17 @@ import os
 
 from importlib.util import find_spec
 
-MODULE_SPEC = find_spec(sys.argv[1])
-MODULE_SOURCE = MODULE_SPEC.origin
+def open_module(module_name):
+    module_spec = find_spec(module_name)
+    module_source = module_spec.origin
 
-print(MODULE_SOURCE)
+    # print(module_source)
 
-if MODULE_SOURCE.endswith('.pyc'):
-    MODULE_SOURCE = MODULE_SOURCE[:-1]
+    if module_source.endswith('.pyc'):
+        module_source = module_source[:-1]
 
-os.chdir(os.path.dirname(MODULE_SOURCE))
-os.execlp('view', 'view', '-M', MODULE_SOURCE)
+    os.chdir(os.path.dirname(module_source))
+    os.execlp('view', 'view', '-M', module_source)
+
+if __name__ == '__main__':
+    open_module(sys.argv[1])
