@@ -14,8 +14,9 @@ import sys
 import os
 
 from importlib.util import find_spec
+from argparse import ArgumentParser
 
-def open_module(module_name):
+def open_module(module_name, editor):
     module_spec = find_spec(module_name)
     module_source = module_spec.origin
 
@@ -25,7 +26,19 @@ def open_module(module_name):
         module_source = module_source[:-1]
 
     os.chdir(os.path.dirname(module_source))
-    os.execlp('view', 'view', '-M', module_source)
+    os.execlp(editor, editor, '-M', module_source)
 
 if __name__ == '__main__':
-    open_module(sys.argv[1])
+    parser = ArgumentParser()
+    parser.add_argument(
+            '-g', help='Open module using gVim',
+            action='store_const', const='gview', default='view', dest='editor'
+    )
+    # TODO: support for arbitrary editors
+    # XXX: would not work with current CLI arguments to vim hard-coded above
+    # parser.add_argument('-e', '--editor', help='Open module using specified editor')
+    parser.add_argument('module_name')
+
+    args = parser.parse_args()
+
+    open_module(args.module_name, editor=args.editor)
