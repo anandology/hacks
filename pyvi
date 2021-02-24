@@ -13,8 +13,10 @@ from __future__ import print_function
 import sys
 import os
 
-MODULE = __import__(sys.argv[1], {}, {}, ['x'])
-MODULE_SOURCE = MODULE.__file__
+from importlib.util import find_spec
+
+MODULE_SPEC = find_spec(sys.argv[1])
+MODULE_SOURCE = MODULE_SPEC.origin
 
 print(MODULE_SOURCE)
 
