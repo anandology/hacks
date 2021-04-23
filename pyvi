@@ -28,16 +28,24 @@ class ModuleSource(object):
         self.source = module_source
 
 
+class Editor(object):
+    def __init__(self, editor_cmd):
+        self.editor_cmd = editor_cmd
+
+    def open(self, module_source):
+        os.chdir(os.path.dirname(module_source))
+
+        editor, args = self.editor_cmd.split(None, 1)
+        os.execlp(editor, editor, *args.split(), module_source)
+
+
 def open_module(module_name, editor_cmd):
     module_source = ModuleSource(module_name).source
 
     # print(module_source)
 
-    os.chdir(os.path.dirname(module_source))
+    Editor(editor_cmd).open(module_source)
 
-
-    editor, args = editor_cmd.split(None, 1)
-    os.execlp(editor, editor, *args.split(), module_source)
 
 if __name__ == '__main__':
     parser = ArgumentParser()
