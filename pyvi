@@ -27,6 +27,9 @@ class ModuleSource(object):
 
         self.source = module_source
 
+    def open_in_editor(self):
+        Editor().open(self.source)
+
 
 class Editor(object):
     def __init__(self):
@@ -45,6 +48,4 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # open_module(args.module_name, editor_cmd=os.getenv('PYVI_EDITOR', 'vim -R -M'))
-
-    Editor().open(ModuleSource(args.module_name).source)
+    ModuleSource(args.module_name).open_in_editor()
