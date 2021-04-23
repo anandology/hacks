@@ -19,16 +19,23 @@ from argparse import ArgumentParser
 
 class ModuleSource(object):
     def __init__(self, module_name):
-        module_spec = find_spec(module_name)
-        module_source = module_spec.origin
+        self.name = module_name
+        self.spec = find_spec(self.name)
+
+    @property
+    def source(self):
+        module_source = self.spec.origin
 
         if module_source.endswith('.pyc'):
             module_source = module_source[:-1]
 
-        self.source = module_source
+        return module_source
 
     def open_in_editor(self):
-        Editor().open(self.source)
+        if self.spec is not None:
+            Editor().open(self.source)
+        else:
+            raise ModuleNotFoundError(f"No module named '{self.name}'", name=self.name, path=sys.path)
 
 
 class Editor(object):
@@ -48,4 +55,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    ModuleSource(args.module_name).open_in_editor()
+    try:
+        ModuleSource(args.module_name).open_in_editor()
+    except ModuleNotFoundError as ex:
+        print(ex.msg, 'Searched in: ', *('\t' + p for p in ex.path), sep='\n', file=sys.stderr)
+        exit(1)
