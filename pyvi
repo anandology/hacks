@@ -23,6 +23,18 @@ class ModuleSource(object):
         self.spec = find_spec(self.name)
 
     @property
+    def has_origin(self):
+        return self.spec.origin is not None and self.spec.origin != ''
+
+    @property
+    def is_binary(self):
+        return self.source.endswith('.so')
+
+    @property
+    def is_builtin(self):
+        return self.source == 'built-in'
+
+    @property
     def source(self):
         module_source = self.spec.origin
 
@@ -32,10 +44,20 @@ class ModuleSource(object):
         return module_source
 
     def open_in_editor(self):
-        if self.spec is not None:
-            Editor().open(self.source)
-        else:
+        if self.spec is None:
             raise ModuleNotFoundError(f"No module named '{self.name}'", name=self.name, path=sys.path)
+
+        if not self.has_origin:
+            raise ModuleNotFoundError(f"No origin for '{self.name}'", name=self.name, path=sys.path)
+
+        if self.is_binary:
+            raise ModuleNotFoundError(f"'{self.name}' is a binary (.so)", name=self.name, path=sys.path)
+
+        if self.is_builtin:
+            raise ModuleNotFoundError(f"'{self.name}' is a built-in", name=self.name, path=[])
+
+
+        Editor().open(self.source)
 
 
 class Editor(object):
@@ -58,5 +80,9 @@ if __name__ == '__main__':
     try:
         ModuleSource(args.module_name).open_in_editor()
     except ModuleNotFoundError as ex:
-        print(ex.msg, 'Searched in: ', *('\t' + p for p in ex.path), sep='\n', file=sys.stderr)
+        print(ex.msg)
+
+        if ex.path:
+            print('Searched in: ', *('\t' + p for p in ex.path), sep='\n', file=sys.stderr)
+
         exit(1)
