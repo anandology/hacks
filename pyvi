@@ -16,7 +16,7 @@ import os
 from importlib.util import find_spec
 from argparse import ArgumentParser
 
-def open_module(module_name, editor):
+def open_module(module_name, editor_cmd):
     module_spec = find_spec(module_name)
     module_source = module_spec.origin
 
@@ -26,7 +26,10 @@ def open_module(module_name, editor):
         module_source = module_source[:-1]
 
     os.chdir(os.path.dirname(module_source))
-    os.execlp(editor, editor, '-M', module_source)
+
+
+    editor, args = editor_cmd.split(None, 1)
+    os.execlp(editor, editor, *args.split(), module_source)
 
 if __name__ == '__main__':
     parser = ArgumentParser()
@@ -34,4 +37,4 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    open_module(args.module_name, editor='view')
+    open_module(args.module_name, editor_cmd=os.getenv('PYVI_EDITOR', 'vim -R -M'))
