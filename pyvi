@@ -16,14 +16,22 @@ import os
 from importlib.util import find_spec
 from argparse import ArgumentParser
 
+
+class ModuleSource(object):
+    def __init__(self, module_name):
+        module_spec = find_spec(module_name)
+        module_source = module_spec.origin
+
+        if module_source.endswith('.pyc'):
+            module_source = module_source[:-1]
+
+        self.source = module_source
+
+
 def open_module(module_name, editor_cmd):
-    module_spec = find_spec(module_name)
-    module_source = module_spec.origin
+    module_source = ModuleSource(module_name).source
 
     # print(module_source)
-
-    if module_source.endswith('.pyc'):
-        module_source = module_source[:-1]
 
     os.chdir(os.path.dirname(module_source))
 
