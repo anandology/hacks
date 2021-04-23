@@ -29,8 +29,8 @@ class ModuleSource(object):
 
 
 class Editor(object):
-    def __init__(self, editor_cmd):
-        self.editor_cmd = editor_cmd
+    def __init__(self):
+        self.editor_cmd = os.getenv('PYVI_EDITOR', 'vim -R -M')
 
     def open(self, module_source):
         os.chdir(os.path.dirname(module_source))
@@ -47,5 +47,4 @@ if __name__ == '__main__':
 
     # open_module(args.module_name, editor_cmd=os.getenv('PYVI_EDITOR', 'vim -R -M'))
 
-    ed = Editor(os.getenv('PYVI_EDITOR', 'vim -R -M'))
-    ed.open(ModuleSource(args.module_name).source)
+    Editor().open(ModuleSource(args.module_name).source)
