@@ -30,15 +30,8 @@ def open_module(module_name, editor):
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument(
-            '-g', help='Open module using gVim',
-            action='store_const', const='gview', default='view', dest='editor'
-    )
-    # TODO: support for arbitrary editors
-    # XXX: would not work with current CLI arguments to vim hard-coded above
-    # parser.add_argument('-e', '--editor', help='Open module using specified editor')
     parser.add_argument('module_name')
 
     args = parser.parse_args()
 
-    open_module(args.module_name, editor=args.editor)
+    open_module(args.module_name, editor='view')
