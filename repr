@@ -4,15 +4,12 @@ repr: prints each line as python repr.
 """
 from __future__ import print_function
 
-import sys
+import fileinput
 
 
 def main():
-    files = [open(arg) for arg in sys.argv[1:]] or [sys.stdin]
-
-    for f in files:
-        for line in f.readlines():
-            print(repr(line)[1:-1]) # strip the quotes
+    for line in fileinput.input():
+        print(repr(line)[1:-1]) # strip the quotes
 
 if __name__ == "__main__":
     main()
