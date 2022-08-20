@@ -1,0 +1,38 @@
+#! /usr/bin/env python
+"""Concatinate given pdf files"""
+
+import os
+import sys
+import PyPDF2 as pyPdf
+import argparse
+
+def parse_args():
+    """Parses the command-line args 
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--password", dest="password", help="Optional password to read encoded pdfs")
+    parser.add_argument("-o", "--output", metavar="output.pdf", help="file to write the output pdf (default: output.pdf)", default="output.pdf")
+    parser.add_argument("files", metavar="pdf-file", nargs="+", help="pdf files to combine")
+    return parser.parse_args()
+
+def main():
+    args = parse_args()
+    writer = pyPdf.PdfFileWriter()
+    print(args)
+
+    for f in args.files:
+        print("reading", f)
+        fileobj = open(f, 'rb')
+        pdf = pyPdf.PdfFileReader(fileobj)
+        if args.password:
+            pdf.decrypt(args.password)
+        for i in range(pdf.numPages):
+            writer.addPage(pdf.getPage(i))
+        #fileobj.close()
+    
+    out = open(args.output, "wb")
+    writer.write(out)
+    print("Wrote", args.output)
+
+if __name__ == "__main__":
+    main()
